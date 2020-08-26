@@ -92,5 +92,10 @@ public class Task002Impl implements Task002 {
         if (strings == null || string == null) {
             throw new IllegalArgumentException();
         }
+        for (String element : strings) {
+            if (element == null) {
+                throw new IllegalArgumentException();
+            }
+        }
     }
 }
