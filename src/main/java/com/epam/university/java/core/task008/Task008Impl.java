@@ -1,7 +1,7 @@
 package com.epam.university.java.core.task008;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.NoSuchElementException;
 
 public class Task008Impl implements Task008 {
 
@@ -9,7 +9,7 @@ public class Task008Impl implements Task008 {
     public boolean isValid(String sourceString) {
 
         char[] source = sourceString.toCharArray();
-        List<Character> bracers = new ArrayList<>();
+        LinkedList<Character> bracers = new LinkedList<>();
 
         for (char symbol : source) {
             switch (symbol) {
@@ -20,35 +20,35 @@ public class Task008Impl implements Task008 {
                     break;
                 case ')':
                     try {
-                        if (bracers.get(getLastIndex(bracers)) == '(') {
-                            bracers.remove(getLastIndex(bracers));
+                        if (bracers.getLast() == '(') {
+                            bracers.removeLast();
                             break;
                         } else {
                             return false;
                         }
-                    } catch (IndexOutOfBoundsException e) {
+                    } catch (NoSuchElementException e) {
                         return false;
                     }
                 case ']':
                     try {
-                        if (bracers.get(getLastIndex(bracers)) == '[') {
-                            bracers.remove(getLastIndex(bracers));
+                        if (bracers.getLast() == '[') {
+                            bracers.removeLast();
                             break;
                         } else {
                             return false;
                         }
-                    } catch (IndexOutOfBoundsException e) {
+                    } catch (NoSuchElementException e) {
                         return false;
                     }
                 case '}':
                     try {
-                        if (bracers.get(getLastIndex(bracers)) == '{') {
-                            bracers.remove(getLastIndex(bracers));
+                        if (bracers.getLast() == '{') {
+                            bracers.removeLast();
                             break;
                         } else {
                             return false;
                         }
-                    } catch (IndexOutOfBoundsException e) {
+                    } catch (NoSuchElementException e) {
                         return false;
                     }
                 default:
@@ -56,9 +56,5 @@ public class Task008Impl implements Task008 {
             }
         }
         return bracers.isEmpty();
-    }
-
-    private int getLastIndex(List<Character> list) {
-        return list.size() - 1;
     }
 }
