@@ -16,6 +16,9 @@ public class Task009Impl implements Task009 {
 
     @Override
     public Collection<String> countWords(File sourceFile) {
+        if (sourceFile == null) {
+            throw new IllegalArgumentException();
+        }
         Set<String> strings = new HashSet<>();
         try {
             strings = Files.lines(Paths.get(sourceFile.toURI()))

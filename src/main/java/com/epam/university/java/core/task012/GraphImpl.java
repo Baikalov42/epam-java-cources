@@ -9,13 +9,17 @@ import java.util.Set;
 public class GraphImpl implements Graph {
 
     private final Map<Integer, Set<Integer>> vertexConnections;
+    private final int countOfVertexes;
 
     /**
      * GraphFactory's constructor.
+     *
      * @param countOfVertexes - count of vertex.
      */
     public GraphImpl(int countOfVertexes) {
+        this.countOfVertexes = countOfVertexes;
         this.vertexConnections = new HashMap<>();
+
         for (int i = 1; i <= countOfVertexes; i++) {
             vertexConnections.put(i, new HashSet<>());
         }
@@ -23,6 +27,9 @@ public class GraphImpl implements Graph {
 
     @Override
     public void createEdge(int from, int to) {
+        if (from > countOfVertexes || to > countOfVertexes) {
+            throw new IllegalArgumentException();
+        }
         vertexConnections.get(from).add(to);
         vertexConnections.get(to).add(from);
     }
@@ -34,12 +41,18 @@ public class GraphImpl implements Graph {
 
     @Override
     public void removeEdge(int from, int to) {
+        if (from > countOfVertexes || to > countOfVertexes) {
+            throw new IllegalArgumentException();
+        }
         vertexConnections.get(from).remove(to);
         vertexConnections.get(to).remove(from);
     }
 
     @Override
     public Collection<Integer> getAdjacent(int from) {
+        if (from > countOfVertexes) {
+            throw new IllegalArgumentException();
+        }
         Set<Integer> adjacentSet = new HashSet<>();
         findConnect(adjacentSet, from);
 
