@@ -6,7 +6,7 @@ import java.util.HashSet;
 public class Task020Impl implements Task020 {
     @Override
     public int calculate(Collection<String> stones) {
-        if (stones == null) {
+        if (stones == null || stones.isEmpty()) {
             throw new IllegalArgumentException();
         }
 
