@@ -5,6 +5,8 @@ import java.util.Collection;
 public class Task022Impl implements Task022 {
     @Override
     public int maxSum(Collection<Integer> numbers) {
+        validate(numbers);
+
         int min = numbers.stream()
                 .min(Integer::compareTo)
                 .get();
@@ -18,6 +20,8 @@ public class Task022Impl implements Task022 {
 
     @Override
     public int minSum(Collection<Integer> numbers) {
+        validate(numbers);
+
         int max = numbers.stream()
                 .max(Integer::compareTo)
                 .get();
@@ -27,5 +31,14 @@ public class Task022Impl implements Task022 {
                 .get();
 
         return result - max;
+    }
+
+    private void validate(Collection<Integer> numbers) {
+        if (numbers == null) {
+            throw new IllegalArgumentException();
+        }
+        if (numbers.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
     }
 }
