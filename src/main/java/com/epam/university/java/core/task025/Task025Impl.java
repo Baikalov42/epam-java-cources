@@ -21,9 +21,6 @@ public class Task025Impl implements Task025 {
                 count++;
             }
         }
-        if (count > sourceMessage.length() - 2) {
-            throw new IllegalArgumentException();
-        }
         return count;
     }
 }
