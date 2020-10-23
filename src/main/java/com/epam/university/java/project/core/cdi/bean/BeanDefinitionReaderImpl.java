@@ -9,25 +9,26 @@ import java.util.Collection;
 
 public class BeanDefinitionReaderImpl implements BeanDefinitionReader {
 
-    private BeanDefinitionRegistry registry;
+    private final BeanDefinitionRegistry beanDefinitionRegistry;
 
     public BeanDefinitionReaderImpl(BeanDefinitionRegistry beanDefinitionRegistry) {
-        this.registry = beanDefinitionRegistry;
+        this.beanDefinitionRegistry = beanDefinitionRegistry;
     }
 
     @Override
     public int loadBeanDefinitions(Resource resource) {
+
         try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(BeanDefinitionsContainer.class);
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+            final JAXBContext jaxbContext = JAXBContext.newInstance(BeanDefinitionsContainer.class);
+            final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
-            BeanDefinitionsContainer container =
-                    (BeanDefinitionsContainer) jaxbUnmarshaller.unmarshal(resource.getFile());
+            final BeanDefinitionsContainer container =
+                    (BeanDefinitionsContainer) unmarshaller.unmarshal(resource.getFile());
 
-            for (BeanDefinition beanDefinition : container.getBeans()) {
-                registry.addBeanDefinition(beanDefinition);
+            for (BeanDefinition beanDefinition : container.getBeanDefinitions()) {
+                beanDefinitionRegistry.addBeanDefinition(beanDefinition);
             }
-            return container.getBeans().size();
+            return container.getBeansQuantity();
 
         } catch (JAXBException e) {
             throw new RuntimeException(e);
@@ -36,6 +37,12 @@ public class BeanDefinitionReaderImpl implements BeanDefinitionReader {
 
     @Override
     public int loadBeanDefinitions(Collection<Resource> resources) {
-        return 0;
+
+        int amount = 0;
+
+        for (Resource resource : resources) {
+            amount = amount + loadBeanDefinitions(resource);
+        }
+        return amount;
     }
 }

@@ -5,10 +5,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
 import java.util.Collection;
 
-@XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "bean")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class BeanDefinitionImpl implements BeanDefinition {
 
     @XmlAttribute(name = "id")
@@ -17,14 +18,14 @@ public class BeanDefinitionImpl implements BeanDefinition {
     @XmlAttribute(name = "class")
     private String className;
 
-    @XmlAttribute(name = "scope")
-    private String scope;
+    @XmlElement(name = "property", type = BeanPropertyDefinitionImpl.class)
+    private Collection<BeanPropertyDefinition> properties = new ArrayList<>();
 
     @XmlAttribute(name = "init")
     private String postConstruct;
 
-    @XmlElement(name = "property", type = BeanPropertyDefinitionImpl.class)
-    private Collection<BeanPropertyDefinition> properties;
+    @XmlAttribute(name = "scope")
+    private String scope;
 
     @Override
     public String getId() {
@@ -48,12 +49,12 @@ public class BeanDefinitionImpl implements BeanDefinition {
 
     @Override
     public Collection<BeanPropertyDefinition> getProperties() {
-        return properties;
+        return new ArrayList<>(properties);
     }
 
     @Override
     public void setProperties(Collection<BeanPropertyDefinition> properties) {
-        this.properties = properties;
+        this.properties = new ArrayList<>(properties);
     }
 
     @Override

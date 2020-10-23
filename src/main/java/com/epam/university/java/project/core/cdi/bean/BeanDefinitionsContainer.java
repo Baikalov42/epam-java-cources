@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
 import java.util.Collection;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -11,13 +12,17 @@ import java.util.Collection;
 public class BeanDefinitionsContainer {
 
     @XmlElement(name = "bean", type = BeanDefinitionImpl.class)
-    private Collection<BeanDefinition> beans;
+    private Collection<BeanDefinition> beanDefinitions = new ArrayList<>();
 
-    public Collection<BeanDefinition> getBeans() {
-        return beans;
+    public Collection<BeanDefinition> getBeanDefinitions() {
+        return new ArrayList<>(beanDefinitions);
     }
 
-    public void setBeans(Collection<BeanDefinition> beans) {
-        this.beans = beans;
+    public void setBeanDefinitions(Collection<BeanDefinition> beanDefinitions) {
+        this.beanDefinitions = new ArrayList<>(beanDefinitions);
+    }
+
+    public int getBeansQuantity() {
+        return beanDefinitions.size();
     }
 }
