@@ -49,12 +49,12 @@ public class BeanDefinitionImpl implements BeanDefinition {
 
     @Override
     public Collection<BeanPropertyDefinition> getProperties() {
-        return new ArrayList<>(properties);
+        return properties;
     }
 
     @Override
     public void setProperties(Collection<BeanPropertyDefinition> properties) {
-        this.properties = new ArrayList<>(properties);
+        this.properties = properties;
     }
 
     @Override

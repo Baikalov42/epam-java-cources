@@ -9,46 +9,23 @@ public class BeanDefinitionRegistryImpl implements BeanDefinitionRegistry {
 
     @Override
     public void addBeanDefinition(BeanDefinition definition) {
+        registry.put(definition.getId(), definition);
+        registry.put(definition.getClassName(), definition);
 
-        String beanId = definition.getId();
-
-        if (beanId == null || beanId.trim().isEmpty()) {
-            throw new RuntimeException("Bean id is empty.");
+        try {
+            final Class<?> beanClass = Class.forName(definition.getClassName());
+            for (Class<?> current : beanClass.getInterfaces()) {
+                if (current != null) {
+                    registry.put(current.getName(), definition);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        registry.put(beanId, definition);
     }
 
     @Override
     public BeanDefinition getBeanDefinition(String beanId) {
-
-        BeanDefinition beanDefinition = registry.get(beanId);
-
-        if (beanDefinition == null) {
-            Class<?> beanClass;
-
-            try {
-                beanClass = Class.forName(beanId);
-            } catch (ClassNotFoundException e) {
-                return null;
-            }
-
-            for (BeanDefinition registryBeanDefinition : registry.values()) {
-                Class<?> registryBeanClass;
-
-                try {
-                    registryBeanClass = Class.forName(registryBeanDefinition.getClassName());
-
-                    if (beanClass.isAssignableFrom(registryBeanClass)) {
-                        beanDefinition = registryBeanDefinition;
-                        break;
-                    }
-
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("Class not found: "
-                            + registryBeanDefinition.getClassName(), e);
-                }
-            }
-        }
-        return beanDefinition;
+        return registry.get(beanId);
     }
 }

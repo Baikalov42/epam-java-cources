@@ -2,20 +2,19 @@ package com.epam.university.java.project.core.cdi.bean;
 
 import com.epam.university.java.project.core.cdi.structure.ListDefinition;
 import com.epam.university.java.project.core.cdi.structure.MapDefinition;
-import com.epam.university.java.project.core.cdi.structure.StructureDefinition;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class BeanFactoryImpl implements BeanFactory {
 
     public static final String SINGLETON_SCOPE = "singleton";
 
     private final BeanDefinitionRegistry beanDefinitionRegistry;
-    private final Map<String, Object> singletonBeans = new HashMap<>();
+    private final Map<BeanDefinition, Object> singletonBeans = new HashMap<>();
 
     public BeanFactoryImpl(BeanDefinitionRegistry beanDefinitionRegistry) {
         this.beanDefinitionRegistry = beanDefinitionRegistry;
@@ -23,35 +22,12 @@ public class BeanFactoryImpl implements BeanFactory {
 
     @Override
     public <T> T getBean(Class<T> beanClass) {
-
-        final BeanDefinition beanDefinition =
-                beanDefinitionRegistry.getBeanDefinition(beanClass.getName());
-
-        if (beanDefinition == null) {
-            throw new RuntimeException("Bean definition not found, class: " + beanClass);
-        }
-        try {
-            return getBean(beanDefinition);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
+        return (T) getBean(beanClass.getName());
     }
 
     @Override
     public Object getBean(String beanName) {
-        final BeanDefinition beanDefinition = beanDefinitionRegistry.getBeanDefinition(beanName);
-
-        if (beanDefinition == null) {
-            throw new RuntimeException("Bean definition not found, name: " + beanName);
-        }
-        try {
-            Object bean = getBean(beanDefinition);
-            return bean;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
+        return getBean(beanDefinitionRegistry.getBeanDefinition(beanName));
     }
 
     @Override
@@ -61,114 +37,94 @@ public class BeanFactoryImpl implements BeanFactory {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T getBean(BeanDefinition beanDefinition) throws Exception {
-
-        final String beanId = beanDefinition.getId();
-        final String beanClassName = beanDefinition.getClassName();
-
-        final String postConstruct = (beanDefinition.getPostConstruct()
-                == null ? "" : beanDefinition.getPostConstruct());
-
-        final Class<T> beanClass = (Class<T>) Class.forName(beanClassName);
-        final T bean = beanClass.newInstance();
-
-        if (SINGLETON_SCOPE.equalsIgnoreCase(beanDefinition.getScope())) {
-            if (singletonBeans.containsKey(beanId)) {
-                return (T) singletonBeans.get(beanId);
-            } else {
-                singletonBeans.put(beanId, bean);
+    public <T> T getBean(BeanDefinition definition) {
+        for (BeanPropertyDefinition propertyDefinition : definition.getProperties()) {
+            if (propertyDefinition.getValue() == null
+                    && propertyDefinition.getRef() == null
+                    && propertyDefinition.getData() == null) {
+                throw new RuntimeException();
             }
         }
 
-        for (BeanPropertyDefinition beanPropertyDefinition : beanDefinition.getProperties()) {
+        try {
+            T instance;
+            Class<T> beanClass = (Class<T>) Class.forName(definition.getClassName());
+            if (SINGLETON_SCOPE.equals(definition.getScope())
+                    && singletonBeans.containsKey(definition)) {
 
-            final Field beanField = beanClass.getDeclaredField(beanPropertyDefinition.getName());
-            beanField.setAccessible(true);
+                instance = (T) singletonBeans.get(definition);
+                return instance;
 
-            final String value =
-                    (beanPropertyDefinition.getValue()
-                            == null ? "" : beanPropertyDefinition.getValue());
+            } else {
+                instance = beanClass.getDeclaredConstructor().newInstance();
 
-            final String ref =
-                    (beanPropertyDefinition.getRef()
-                            == null ? "" : beanPropertyDefinition.getRef());
+                if (SINGLETON_SCOPE.equals(definition.getScope())) {
+                    singletonBeans.put(definition, instance);
+                }
+            }
 
-            final StructureDefinition data = beanPropertyDefinition.getData();
+            for (BeanPropertyDefinition property : definition.getProperties()) {
+                Field beanField = beanClass.getDeclaredField(property.getName());
+                beanField.setAccessible(true);
 
-            if (!value.trim().isEmpty()) {
-
-                if (beanField.getType().isAssignableFrom(Integer.TYPE)) {
-                    beanField.set(bean, Integer.parseInt(value));
-
-                } else if (beanField.getType().isAssignableFrom(Long.TYPE)) {
-                    beanField.set(bean, Long.parseLong(value));
-
-                } else if (beanField.getType().isAssignableFrom(Float.TYPE)) {
-                    beanField.set(bean, Float.parseFloat(value));
-
-                } else if (beanField.getType().isAssignableFrom(Double.TYPE)) {
-                    beanField.set(bean, Double.parseDouble(value));
-
-                } else {
-                    beanField.set(bean, value);
+                if (property.getValue() != null) {
+                    try {
+                        beanField.set(instance, Integer.parseInt(property.getValue()));
+                    } catch (Exception e) {
+                        beanField.set(instance, property.getValue());
+                    }
                 }
 
-            } else if (!ref.trim().isEmpty()) {
-                beanField.set(bean, getBean(ref));
+                if (property.getRef() != null) {
+                    Object object = getBean(property.getRef());
+                    beanField.set(instance, object);
+                }
 
-            } else if (data != null) {
-                if (data instanceof ListDefinition) {
-                    ListDefinition listDefinition = (ListDefinition) data;
+                if (property.getData() == null) {
+                    continue;
+                }
 
-                    List<Object> list = new ArrayList<>();
-                    for (ListDefinition.ListItemDefinition item : listDefinition.getItems()) {
-                        list.add(item.getValue());
-                    }
+                if (property.getData() instanceof ListDefinition) {
+                    ListDefinition listDefinition = (ListDefinition) property.getData();
 
-                    beanField.set(bean, list);
+                    Collection<String> items =
+                            listDefinition
+                                    .getItems()
+                                    .stream()
+                                    .map(ListDefinition.ListItemDefinition::getValue)
+                                    .collect(Collectors.toList());
+                    beanField.set(instance, items);
+                }
 
-                } else if (data instanceof MapDefinition) {
+                if (property.getData() instanceof MapDefinition) {
+                    MapDefinition mapDefinition = (MapDefinition) property.getData();
 
-                    MapDefinition mapDefinition = (MapDefinition) data;
-                    Map<Object, Object> map = new HashMap<>();
+                    Map<String, Object> entries = new HashMap<>();
 
-                    for (MapDefinition.MapEntryDefinition entry : mapDefinition.getValues()) {
+                    for (MapDefinition.MapEntryDefinition
+                            entryDefinition : mapDefinition.getValues()) {
 
-                        final String eKey = entry.getKey();
+                        if (entryDefinition.getValue() != null
+                                && entryDefinition.getRef() != null) {
 
-                        final String eValue =
-                                (entry.getValue() == null ? "" : entry.getValue());
+                            throw new RuntimeException();
+                        }
 
-                        final String eRef =
-                                (entry.getRef() == null ? "" : entry.getRef());
-
-                        if (!eValue.trim().isEmpty()) {
-                            map.put(eKey, eValue);
-
-                        } else if (!eRef.trim().isEmpty()) {
-                            map.put(eKey, getBean(eRef));
-
-                        } else {
-                            throw new RuntimeException("Value not available "
-                                    + beanDefinition.getClassName());
+                        if (entryDefinition.getValue() != null) {
+                            entries.put(entryDefinition.getKey(), entryDefinition.getValue());
+                        }
+                        if (entryDefinition.getRef() != null) {
+                            Object object = getBean(entryDefinition.getRef());
+                            entries.put(entryDefinition.getKey(), object);
                         }
                     }
-                    beanField.set(bean, map);
-                } else {
-                    throw new RuntimeException("Unsupported instance ");
+                    beanField.set(instance, entries);
                 }
-            } else {
-                throw new RuntimeException("Value not available "
-                        + beanDefinition.getClassName());
             }
-        }
-        if (!postConstruct.trim().isEmpty()) {
-            beanClass.getDeclaredMethod(postConstruct).invoke(bean);
-        }
 
-        if (InitializingBean.class.isAssignableFrom(beanClass)) {
-            ((InitializingBean) bean).afterPropertiesSet();
+            return instance;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return bean;
     }
 }

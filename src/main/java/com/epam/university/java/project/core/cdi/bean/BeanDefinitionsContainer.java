@@ -15,11 +15,11 @@ public class BeanDefinitionsContainer {
     private Collection<BeanDefinition> beanDefinitions = new ArrayList<>();
 
     public Collection<BeanDefinition> getBeanDefinitions() {
-        return new ArrayList<>(beanDefinitions);
+        return  beanDefinitions;
     }
 
     public void setBeanDefinitions(Collection<BeanDefinition> beanDefinitions) {
-        this.beanDefinitions = new ArrayList<>(beanDefinitions);
+        this.beanDefinitions = beanDefinitions;
     }
 
     public int getBeansQuantity() {
