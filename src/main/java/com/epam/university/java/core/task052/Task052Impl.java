@@ -23,7 +23,7 @@ public class Task052Impl implements Task052 {
         for (int i = 0; i < reversed.length(); i++) {
             int current = getDigit(reversed.charAt(i));
 
-            if (isOdd(current)) {
+            if (isOdd(i+1)) {
                 int result = current * 2;
 
                 if (!isOneDigit(result)) {
