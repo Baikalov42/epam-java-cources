@@ -160,6 +160,7 @@ public class Task053Impl implements Task053 {
                 return 6;
         }
     }
+
     private void validateOrder(String input) {
         char open = '(';
         char close = ')';
@@ -173,7 +174,9 @@ public class Task053Impl implements Task053 {
             } else if (x == close) {
                 if ((!bracers.isEmpty()) && bracers.getLast() == open) {
                     bracers.removeLast();
-                } else throw new IllegalArgumentException();
+                } else {
+                    throw new IllegalArgumentException();
+                }
             }
         }
         if (!bracers.isEmpty()) {
