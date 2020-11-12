@@ -3,6 +3,7 @@ package com.epam.university.java.core.task053;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -23,16 +24,14 @@ public class Task053Impl implements Task053 {
         if (input == null || input.length() < 3 || input.matches("\\s")) {
             throw new IllegalArgumentException();
         }
-        if (!input.matches("[\\d-+*/()^]+")) {
-            throw new IllegalArgumentException();
-        }
+        validateInput(input);
+        validateOrder(input);
 
         String rpn = getExpression(input);
         return counting(rpn);
     }
 
     private String getExpression(String input) {
-
 
         StringBuilder result = new StringBuilder();
         Stack<Character> operators = new Stack<>();
@@ -127,7 +126,6 @@ public class Task053Impl implements Task053 {
         return stack.peek();
     }
 
-
     private boolean isOperator(char ch) {
         Set<Character> set = new HashSet<>();
 
@@ -160,6 +158,33 @@ public class Task053Impl implements Task053 {
                 return 5;
             default:
                 return 6;
+        }
+    }
+    private void validateOrder(String input) {
+        char open = '(';
+        char close = ')';
+
+        char[] source = input.toCharArray();
+        LinkedList<Character> bracers = new LinkedList<>();
+
+        for (Character x : source) {
+            if (x == open) {
+                bracers.add(x);
+            } else if (x == close) {
+                if ((!bracers.isEmpty()) && bracers.getLast() == open) {
+                    bracers.removeLast();
+                } else throw new IllegalArgumentException();
+            }
+        }
+        if (!bracers.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    private void validateInput(String input) {
+
+        if (!input.matches("[\\d-+*/()^]+")) {
+            throw new IllegalArgumentException();
         }
     }
 }
