@@ -36,6 +36,13 @@ public class BeanFactoryImpl implements BeanFactory {
         return (T) getBean(beanName);
     }
 
+    /**
+     * Get Bean by BeanDefinition.
+     *
+     * @param definition information about bean from XML file.
+     * @param <T>        Generic.
+     * @return new Object necessary class from beanDefinition.
+     */
     @SuppressWarnings("unchecked")
     public <T> T getBean(BeanDefinition definition) {
         for (BeanPropertyDefinition propertyDefinition : definition.getProperties()) {
